@@ -1,0 +1,41 @@
+version: '2'
+services:
+  portainer:
+    container_name: portainer
+    image: portainer/portainer
+    restart: unless-stopped
+    ports:
+      - 9000:9000
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+  influxdb:
+    container_name: influxdb
+    image: "influxdb:latest"
+    restart: unless-stopped
+    ports:
+      - 8086:8086
+      - 8083:8083
+      - 2003:2003
+    env_file:
+      - ./services/influxdb/influxdb.env
+    volumes:
+      - ./volumes/influxdb/data:/var/lib/influxdb
+      - ./backups/influxdb/db:/var/lib/influxdb/backup
+  grafana:
+    container_name: grafana
+    image: grafana/grafana:latest
+    restart: unless-stopped
+    user: "0"
+    ports:
+      - 3000:3000
+    env_file:
+      - ./services/grafana/grafana.env
+    volumes:
+      - ./volumes/grafana/data:/var/lib/grafana
+      - ./volumes/grafana/log:/var/log/grafana
+  covid-exporter:
+    container_name: covid-exporter
+    image: covid-exporter:latest
+    restart: unless-stopped
+    env_file: ./services/covid-exporter/covid-exporter.env
+    command: pipenv run python .
